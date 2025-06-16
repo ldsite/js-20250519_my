@@ -7,7 +7,7 @@ export default class SortableTable {
 
     this.element = this.createElement(this.createTemplate());
     this.subElements = {
-      body: this.element.querySelector('tbody')
+      body: this.element.querySelector('.sortable-table__body')
     };
   }
   createElement(template) {
@@ -15,32 +15,38 @@ export default class SortableTable {
     element.innerHTML = template.trim();
     return element.firstElementChild;
   }
+  createClassIcon = (item) => item ? 'sortable-table__sort-arrow' : '';
+  createElementIcon = (item) => item ? `<span data-element="arrow" class="sortable-table__sort-arrow">
+                                        <span class="sort-arrow"></span>
+                                      </span>` : "";
+
   createTemplateHeader() {
     return this.headerConfig.map(item => {
-      return `
-      <th>${item.title}</th>
-      `;
+      
+      return `<div class="sortable-table__cell" data-id="${item.id}" data-sortable="${item.sortable}" ><span>${item.title} </span>${this.createElementIcon(item.sortable)}</div>`;
     }).join('');
   }
   createTemplateBody(data = this.data) {
     return data.map(item => {
       const row = this.headerConfig.map(column => {
+        let cell;
         if (column.id === 'images') {
-          return `<td><div class="sortable-table__cell">
-          <img class="sortable-table-image" alt="Image" src="${item?.images?.[0]?.url || 'https://via.placeholder.com/32'}">
-        </div></td>`;
+          cell = `<img class="sortable-table-image" alt="Image" src="${item.images[0].url}"/>`;
+        } else {
+          cell = `${item[column.id]}`;
         }
-        return `<td>${item[column.id]}</td>`;
+        return `<div class="sortable-table__cell">${cell}</div>`;
       }).join('');
-      return `<tr>${row}</tr>`;
+      return `<a href="/products/${item.id}" class="sortable-table__row">${row}</a>`;
     }).join('');
   }
   createTemplate() {
     return (`
-            <table>
-              <thead><tr>${this.createTemplateHeader()}</tr> </thead>
-              <tbody>${this.createTemplateBody()}</tbody>
-            </table>
+            <div data-element="productsContainer" class="products-list__container">
+            <div class="sortable-table">
+              <div data-element="header" class="sortable-table__header sortable-table__row">${this.createTemplateHeader()} </div>
+              <div data-element="body" class="sortable-table__body">${this.createTemplateBody()}</div>
+            </div></div>
             `);
   }
   sort(field, order = "asc") {

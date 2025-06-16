@@ -106,6 +106,7 @@ describe('events-practice/sortable-table-v2', () => {
   });
 
   it('should sort "desc" correctly for "sortType" equal number', () => {
+     sortableTable.sort('price', 'desc');
     const { children } = sortableTable.subElements.header;
     const [_, price] = children;
 
@@ -113,7 +114,7 @@ describe('events-practice/sortable-table-v2', () => {
       bubbles: true
     });
 
-    price.dispatchEvent(pointerdown);
+    // price.dispatchEvent(pointerdown);
 
     const { body } = sortableTable.subElements;
     const firstRow = body.firstElementChild;

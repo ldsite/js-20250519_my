@@ -1,6 +1,7 @@
 export default class SortableTable {
   element;
   subElements = {};
+  arrowElement;
   constructor(headersConfig, {
     data = [],
     sorted = {}
@@ -13,10 +14,13 @@ export default class SortableTable {
       header: this.element.querySelector('.sortable-table__header'),
       body: this.element.querySelector('.sortable-table__body')
     };
-
-    this.initEventListeners();
+    this.isSortLocally = true;
+    this.createArrowElement();
+    this.handleHeaderCellClick();
 
     if (this.sorted.id && this.sorted.order) {
+      const currentCell = this.subElements.header.querySelector(`[data-id="${this.sorted.id}"]`);
+      if (currentCell) currentCell.append(this.arrowElement);
       this.sort(this.sorted.id, this.sorted.order);
     }
   }
@@ -25,15 +29,17 @@ export default class SortableTable {
     element.innerHTML = template.trim();
     return element.firstElementChild;
   }
-  createClassIcon = (item) => item ? 'sortable-table__sort-arrow' : '';
-  createElementIcon = (item) => item ? `<span data-element="arrow" class="sortable-table__sort-arrow">
-                                        <span class="sort-arrow"></span>
-                                      </span>` : "";
+  createArrowElement() {
+    this.arrowElement = this.createElement(this.createArrowTemplate());
+  }
+  createArrowTemplate() {
+    return `<span data-element="arrow" class="sortable-table__sort-arrow"><span class="sort-arrow"></span></span>`
+  }
 
   createTemplateHeader() {
     return this.headersConfig.map(item => {
       const order = this.sorted.id === item.id ? this.sorted.order : '';
-      return `<div class="sortable-table__cell" data-id="${item.id}" data-sortable="${item.sortable}" data-order="${order}"><span>${item.title} </span>${this.createElementIcon(item.sortable)}</div>`;
+      return `<div class="sortable-table__cell" data-id="${item.id}" data-sortable="${item.sortable}" data-order="${order}"><span>${item.title} </span></div>`;
     }).join('');
   }
   createTemplateBody(data = this.data) {
@@ -50,19 +56,19 @@ export default class SortableTable {
       return `<a href="/products/${item.id}" class="sortable-table__row">${row}</a>`;
     }).join('');
   }
-  initEventListeners() {
+  handleHeaderCellClick() {
     this.subElements.header.addEventListener('pointerdown', event => {
-      const cell = event.target.closest('.sortable-table__cell');
+      const cellElement = event.target.closest('.sortable-table__cell');
 
-      if (!cell) return;
-      const field = cell.dataset.id;
-
-      const column = this.headersConfig.find(col => col.id === field);
-      if (!column || !column.sortable) return;
-
-      const currentOrder = cell.dataset.order;
-      const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-      this.sort(field, newOrder);
+      if (!cellElement) return;
+      if (cellElement.dataset.sortable !== "true") {
+        return;
+      }
+      const sortField = cellElement.dataset.id;
+      const currentOrder = cellElement.dataset.order;
+      const sortOrder = currentOrder ? (currentOrder === 'asc' ? 'desc' : 'asc') : 'desc';
+      cellElement.append(this.arrowElement);
+      this.sort(sortField, sortOrder);
     });
   }
   createTemplate() {
@@ -73,7 +79,7 @@ export default class SortableTable {
             </div></div>
             `);
   }
-  sort(field, order) {
+  sortOnClient(field, order) {
     const column = this.headersConfig.find(item => item.id === field);
     if (!column || !column.sortable) return;
     const sortTo = order === 'asc' ? 1 : -1;
@@ -97,15 +103,29 @@ export default class SortableTable {
       th.dataset.order = th.dataset.id === field ? order : '';
     });
   }
+  sort(sortField, sortOrder) {
+    if (this.isSortLocally) {
+      this.sortOnClient(sortField, sortOrder);
+    } else {
+      this.sortOnServer();
+    }
+  }
   remove() {
     if (this.element) {
       this.element.remove();
     }
   }
+  createListeners() {
+    this.subElements.header.addEventListener('click', this.handleHeaderCellClick);
+  }
+
+  destroyListeners() {
+    this.subElements.header.removeEventListener('click', this.handleHeaderCellClick);
+  }
+
   destroy() {
     this.remove();
-    this.element = null;
-    this.subElements = {};
+    this.destroyListeners();
   }
 }
 

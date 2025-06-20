@@ -5,8 +5,6 @@ export default class SortableTableV2 extends SortableTableV1 {
   subElements = {};
   arrowElement;
   constructor(headerConfig, { data = [], sorted = {} } = {}) {
-    // console.log("data:", data);
-    // console.log("sorted:", sorted);
     super(headerConfig, data);
     this.sorted = sorted;
     this.element = this.createElement(this.createTemplate());
@@ -62,14 +60,7 @@ export default class SortableTableV2 extends SortableTableV1 {
       this.sort(sortField, sortOrder);
     });
   }
-  // createTemplate() {
-  //   return `<div data-element="productsContainer" class="products-list__container">
-  //           <div class="sortable-table">
-  //             <div data-element="header" class="sortable-table__header sortable-table__row">${this.createTemplateHeader()}</div>
-  //             <div data-element="body" class="sortable-table__body">${this.createTemplateBody()}</div>
-  //           </div></div>
-  //           `;
-  // }
+
   sortOnClient(field, order) {
     const column = this.headerConfig.find((item) => item.id === field);
     if (!column || !column.sortable) return;
@@ -111,16 +102,16 @@ export default class SortableTableV2 extends SortableTableV1 {
       this.element.remove();
     }
   }
-  createListeners() {
-    this.subElements.header.addEventListener(
-      "click",
-      this.handleHeaderCellClick
-    );
-  }
+  // createListeners() {
+  //   this.subElements.header.addEventListener(
+  //     "pointerdown",
+  //     this.handleHeaderCellClick
+  //   );
+  // }
 
   destroyListeners() {
     this.subElements.header.removeEventListener(
-      "click",
+      "pointerdown",
       this.handleHeaderCellClick
     );
   }

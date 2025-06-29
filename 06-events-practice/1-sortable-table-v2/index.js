@@ -4,6 +4,7 @@ export default class SortableTableV2 extends SortableTableV1 {
   element;
   subElements = {};
   arrowElement;
+
   constructor(headerConfig, { data = [], sorted = {} } = {}) {
     super(headerConfig, data);
     this.sorted = sorted;
@@ -12,6 +13,7 @@ export default class SortableTableV2 extends SortableTableV1 {
       header: this.element.querySelector(".sortable-table__header"),
       body: this.element.querySelector(".sortable-table__body"),
     };
+ 
     this.isSortLocally = true;
     this.createArrowElement();
     this.handleHeaderCellClick();

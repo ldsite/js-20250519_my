@@ -30,10 +30,6 @@ export default class ColumnChartFromApi extends ColumnChart {
             header: this.element.querySelector(".column-chart__title"),
             body: this.element.querySelector("[data-element='body']"),
         };
-        this.elementsInput = {
-            from: document.getElementById('start'),
-            to: document.getElementById('end')
-        }
         this.update(this.range.from, this.range.to);
 
     }
@@ -44,14 +40,11 @@ export default class ColumnChartFromApi extends ColumnChart {
             this.element.classList.add('column-chart_loading');
         }
     }
-    getDate() {
-        const from = this.elementsInput.from.value();
-        const to = this.elementsInput.to.value();
-        update(from, to);
-
+    getDate=()=> {
+        this.update(this.range.from, this.range.to)
     }
     createListeners() {
-        document.addEventListener("pointerdown", (event) => this.getDate())
+        document.addEventListener("pointerdown", this.getDate);
     }
     async update(from, to) {
         const fromDate = new Date(from);
@@ -70,7 +63,7 @@ export default class ColumnChartFromApi extends ColumnChart {
     destroyListeners() {
         document.removeEventListener(
             "pointerdown",
-            this.getDate()
+            this.getDate
         );
     }
     remove() {

@@ -57,7 +57,7 @@ export default class ColumnChartFromApi extends ColumnChart {
             this.subElements.body.innerHTML = this.createChartBodyTemplate();
             return data;
         } catch (err) {
-            console.log(err);
+            // console.log(err);
         }
     }
     destroyListeners() {
@@ -67,6 +67,9 @@ export default class ColumnChartFromApi extends ColumnChart {
         );
     }
     remove() {
+        if (this.element) {
+          this.element.remove();
+        }
         this.destroyListeners()
     }
 

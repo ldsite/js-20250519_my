@@ -4,13 +4,8 @@ export class SortableTableV1 {
   constructor(headerConfig = [], data = []) {
     this.headerConfig = headerConfig;
     this.data = data;
-
-    // this.element = this.createElement(this.createTemplate());
-    // this.subElements = {
-    //   header: this.element.querySelector(".sortable-table__header"),
-    //   body: this.element.querySelector(".sortable-table__body"),
-    // };
   }
+
   createElement(template) {
     const element = document.createElement("div");
     element.innerHTML = template.trim();
@@ -27,11 +22,9 @@ export class SortableTableV1 {
   createTemplateHeader() {
     return this.headerConfig
       .map((item) => {
-        return `<div class="sortable-table__cell" data-id="${
-          item.id
-        }" data-sortable="${item.sortable}" ><span>${
-          item.title
-        } </span>${this.createElementIcon(item.sortable)}</div>`;
+        return `<div class="sortable-table__cell" data-id="${item.id
+          }" data-sortable="${item.sortable}" ><span>${item.title
+          } </span>${this.createElementIcon(item.sortable)}</div>`;
       })
       .join("");
   }
@@ -44,9 +37,8 @@ export class SortableTableV1 {
             if (column.template) {
               cell = `${column.template(item[column.id])}`;
             } else {
-              cell = `<div class="sortable-table__cell">${
-                item[column.id]
-              }</div>`;
+              cell = `<div class="sortable-table__cell">${item[column.id]
+                }</div>`;
             }
             return `${cell}`;
           })
@@ -105,9 +97,13 @@ export default class SortableTable extends SortableTableV1 {
   constructor(headerConfig = [], data = []) {
     super(headerConfig, data);
     this.element = this.createElement(this.createTemplate());
-    this.subElements = {
-      header: this.element.querySelector(".sortable-table__header"),
-      body: this.element.querySelector(".sortable-table__body"),
-    };
+    this.subElements = this.getSubElements(this.element);
+  }
+  getSubElements(element) {
+    const elements = element.querySelectorAll("[data-element]");
+    return [...elements].reduce((accum, subElement) => {
+      accum[subElement.dataset.element] = subElement;
+      return accum;
+    }, {});
   }
 }

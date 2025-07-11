@@ -2,18 +2,14 @@ import { SortableTableV1 } from "../../05-dom-document-loading/2-sortable-table-
 
 export default class SortableTableV2 extends SortableTableV1 {
   element;
-  subElements = {};
+  // subElements = {};
   arrowElement;
 
   constructor(headerConfig, { data = [], sorted = {} } = {}) {
     super(headerConfig, data);
     this.sorted = sorted;
     this.element = this.createElement(this.createTemplate());
-    this.subElements = {
-      header: this.element.querySelector(".sortable-table__header"),
-      body: this.element.querySelector(".sortable-table__body"),
-    };
- 
+    this.subElements = this.getSubElements(this.element);
     this.isSortLocally = true;
     this.createArrowElement();
     this.handleHeaderCellClick();
@@ -22,9 +18,18 @@ export default class SortableTableV2 extends SortableTableV1 {
       const currentCell = this.subElements.header.querySelector(
         `[data-id="${this.sorted.id}"]`
       );
-      if (currentCell) currentCell.append(this.arrowElement);
+      if (currentCell) {
+        currentCell.append(this.arrowElement);
+      }
       this.sort(this.sorted.id, this.sorted.order);
     }
+  }
+  getSubElements(element) {
+    const elements = element.querySelectorAll('[data-element]');
+    return [...elements].reduce((accum, subElement) => {
+      accum[subElement.dataset.element] = subElement;
+      return accum;
+    }, {});
   }
 
   createArrowElement() {
@@ -42,25 +47,25 @@ export default class SortableTableV2 extends SortableTableV1 {
       })
       .join("");
   }
+  clickElement = (event) => {
+    const cellElement = event.target.closest(".sortable-table__cell");
 
+    if (!cellElement) return;
+    if (cellElement.dataset.sortable !== "true") {
+      return;
+    }
+    const sortField = cellElement.dataset.id;
+    const currentOrder = cellElement.dataset.order;
+    const sortOrder = currentOrder
+      ? currentOrder === "asc"
+        ? "desc"
+        : "asc"
+      : "desc";
+    cellElement.append(this.arrowElement);
+    this.sort(sortField, sortOrder);
+  }
   handleHeaderCellClick() {
-    this.subElements.header.addEventListener("pointerdown", (event) => {
-      const cellElement = event.target.closest(".sortable-table__cell");
-
-      if (!cellElement) return;
-      if (cellElement.dataset.sortable !== "true") {
-        return;
-      }
-      const sortField = cellElement.dataset.id;
-      const currentOrder = cellElement.dataset.order;
-      const sortOrder = currentOrder
-        ? currentOrder === "asc"
-          ? "desc"
-          : "asc"
-        : "desc";
-      cellElement.append(this.arrowElement);
-      this.sort(sortField, sortOrder);
-    });
+    this.subElements.header.addEventListener("pointerdown", this.clickElement);
   }
 
   sortOnClient(field, order) {
@@ -92,11 +97,12 @@ export default class SortableTableV2 extends SortableTableV1 {
         th.dataset.order = th.dataset.id === field ? order : "";
       });
   }
+
   sort(sortField, sortOrder) {
     if (this.isSortLocally) {
       this.sortOnClient(sortField, sortOrder);
     } else {
-      this.sortOnServer();
+      this.sortOnServer(sortField, sortOrder);
     }
   }
   remove() {
@@ -104,18 +110,9 @@ export default class SortableTableV2 extends SortableTableV1 {
       this.element.remove();
     }
   }
-  // createListeners() {
-  //   this.subElements.header.addEventListener(
-  //     "pointerdown",
-  //     this.handleHeaderCellClick
-  //   );
-  // }
 
   destroyListeners() {
-    this.subElements.header.removeEventListener(
-      "pointerdown",
-      this.handleHeaderCellClick
-    );
+    this.subElements.header.removeEventListener("pointerdown", this.clickElement);
   }
 
   destroy() {
